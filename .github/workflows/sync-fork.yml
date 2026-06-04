@@ -1,0 +1,36 @@
+name: Sync Fork
+
+on:
+  schedule:
+    # 每天北京时间 08:10 同步一次
+    # GitHub Actions 的 cron 使用 UTC 时间，UTC 00:10 = 北京时间 08:10
+    - cron: "10 0 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    name: Sync fork with upstream
+
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Pull upstream changes
+        id: sync
+        uses: XueMoMo/Sync-Fork-action@v1.0.6
+        with:
+          upstream_repository: sansan0/TrendRadar
+          upstream_branch: master
+          target_branch: master
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check sync result
+        if: steps.sync.outputs.has_new_commits
+        run: echo "New upstream commits were synced."
